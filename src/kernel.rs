@@ -15,3 +15,9 @@ pub fn run_kernel(env: &mut Env, threads: usize) {
         clEnqueueNDRangeKernel(env.queue, env.kernel, 1, std::ptr::null_mut(), &threads, std::ptr::null_mut(), 0, std::ptr::null_mut(), std::ptr::null_mut());
     }
 }
+
+pub fn make_kernel(env: &mut Env, name: &str) {
+    unsafe {
+        env.kernel = clCreateKernel(env.program, name.as_ptr() as *const i8, &mut env.err);
+    }
+}
