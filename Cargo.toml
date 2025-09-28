@@ -12,3 +12,7 @@ readme = "README.md"
 
 [dependencies]
 obwio = "0.1.1"
+
+[build-dependencies]
+cc = "1.0"
+
