@@ -2,6 +2,9 @@ use obwio::*;
 use crate::runtime::Env;
 use std::ffi::CString;
 
+
+/// setarg() sets an argument. To make sure it works properly, initialize your variables in the order they are
+/// used in the kernel.
 pub fn setarg(env: &mut Env, arg_idx: usize) {
     unsafe {
         let size = std::mem::size_of::<cl_mem>();
@@ -13,7 +16,7 @@ pub fn setarg(env: &mut Env, arg_idx: usize) {
     }
 }
 
-
+/// Run the kernel! Simply input the number of threads.
 pub fn run_kernel(env: &mut Env, threads: usize) {
     unsafe {
         let global_work_size: [usize; 1] = [threads];
@@ -31,6 +34,8 @@ pub fn run_kernel(env: &mut Env, threads: usize) {
     }
 }
 
+
+/// Make the kernel.
 pub fn make_kernel(env: &mut Env, name: &str) {
     unsafe {
         let cname = CString::new(name).unwrap();

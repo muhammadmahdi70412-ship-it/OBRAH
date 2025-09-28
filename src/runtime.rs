@@ -2,6 +2,8 @@ use obwio::*;
 use std::fs;
 use std::ffi::CString;
 
+
+/// This structure holds all the data; the platform, the device, the variables, etc.
 pub struct Env {
     pub platform: cl_platform_id,
     pub device: cl_device_id,
@@ -14,6 +16,8 @@ pub struct Env {
     pub err: cl_int,
 }
 
+
+/// The setup() function sets the platform, device, context and queue and initialises everything.
 pub fn setup() -> Env {
     unsafe{
         let mut platform: cl_platform_id = std::ptr::null_mut();
@@ -48,12 +52,13 @@ pub fn setup() -> Env {
     }
 }
 
+
+
+// The make_prog() function uses the kernel and initialisations to make the actual OpenCL Programs
 pub fn make_prog(env: &mut Env) {
     unsafe {
         let source = env.kerncode.as_ref().expect("Kernel not loaded!");
 
-        let mut src_ptr = source.as_ptr() as *const i8;
-        let src_len = source.len();
         
         let c_source = CString::new(source.as_str()).unwrap();
         let mut src_ptr = c_source.as_ptr();

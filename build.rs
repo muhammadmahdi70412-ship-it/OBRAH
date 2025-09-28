@@ -1,4 +1,10 @@
+
 fn main() {
-    println!("cargo:rustc-link-search=native=D:/ashha/Downloads/OpenCL-SDK-v2025.07.23-Win-x64/OpenCL-SDK-v2025.07.23-Win-x64/lib");
-    println!("cargo:rustc-link-lib=dylib=OpenCL");
+    // Try to read the environment variable OPENCL_SDK.
+    if let Ok(path) = std::env::var("OPENCL_SDK") {
+        println!("cargo:rustc-link-search=native={}/lib", path);
+        println!("cargo:rustc-link-lib=dylib=OpenCL");
+    } else {
+        println!("cargo:warning=Environment variable OPENCL_SDK not set. Please set it to your OpenCL SDK path.");
+    }
 }

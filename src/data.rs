@@ -1,6 +1,8 @@
 use obwio::*;
 use crate::runtime::Env;
 
+
+/// Create a buffer in order to be sent to the GPU.
 pub fn buffer_write(env: &mut Env, data: &[f32]) -> usize {
     unsafe {
         let size = data.len() * std::mem::size_of::<f32>();
@@ -13,6 +15,7 @@ pub fn buffer_write(env: &mut Env, data: &[f32]) -> usize {
     }
 }
 
+/// Send the buffer, and the data supposed to be in the buffer, to the GPU.
 pub fn to_gpu(env: &mut Env, data: &[f32], idx: usize) {
     unsafe {
         let size = data.len() * std::mem::size_of::<f32>();
@@ -34,6 +37,8 @@ pub fn to_gpu(env: &mut Env, data: &[f32], idx: usize) {
     }
 }
 
+
+/// Get data from the GPU, from a specific buffer.
 pub fn from_gpu(env: &mut Env, data: &mut [f32], idx: usize) {
     unsafe {
         let size = data.len() * std::mem::size_of::<f32>();
