@@ -1,13 +1,14 @@
 use obwio::*;
 use crate::runtime::Env;
 
-pub fn setarg(env: &mut Env, idx: usize) {
+pub fn setarg(env: &mut Env, arg_idx: usize) {
     unsafe {
         let size = std::mem::size_of::<cl_mem>();
-        let buf_ptr: *const cl_mem = &env.buffers[idx];
-        clSetKernelArg(env.kernel, 0, size, buf_ptr as *const _);
+        let buf_ptr: *const cl_mem = &env.buffers[arg_idx];
+        clSetKernelArg(env.kernel, arg_idx as u32, size, buf_ptr as *const _);
     }
 }
+
 
 pub fn run_kernel(env: &mut Env, threads: usize) {
     unsafe {
