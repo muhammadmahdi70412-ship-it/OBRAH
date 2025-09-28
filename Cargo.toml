@@ -1,7 +1,14 @@
 [package]
 name = "obrah"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
+authors = ["Muhammad Mahdi"]
+license = "Apache-2.0"
+description = "High-level Rust wrapper around OpenCL using OBWIO"
+repository = "https://github.com/muhammadmahdi70412-ship-it/OBRAH"
+keywords = ["opencl", "gpu", "rust", "compute"]
+categories = ["gpu", "science", "development-tools"]
+readme = "README.md"
 
 [dependencies]
 obwio = "0.1.1"
