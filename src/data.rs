@@ -6,6 +6,9 @@ pub fn buffer_write(env: &mut Env, data: &[f32]) -> usize {
         let size = data.len() * std::mem::size_of::<f32>();
         let buf = clCreateBuffer(env.context, CL_MEM_READ_WRITE.into(), size, std::ptr::null_mut(), &mut env.err);
         env.buffers.push(buf);
+        if env.err != 0 {
+            panic!("OpenCL error: {}", env.err);
+        }
         env.buffers.len() - 1
     }
 }
@@ -23,7 +26,11 @@ pub fn to_gpu(env: &mut Env, data: &[f32], idx: usize) {
             0,
             std::ptr::null_mut(),
             std::ptr::null_mut(),
+            
         );
+        if env.err != 0 {
+            panic!("OpenCL error: {}", env.err);
+        }
     }
 }
 
@@ -41,5 +48,9 @@ pub fn from_gpu(env: &mut Env, data: &mut [f32], idx: usize) {
             std::ptr::null_mut(),
             std::ptr::null_mut(),
         );
+        
+        if env.err != 0 {
+            panic!("OpenCL error: {}", env.err);
+        }
     }
 }
