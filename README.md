@@ -6,37 +6,37 @@ OBRAH (OpenCL But Rusty And High-level) is a Rust crate built on top of [OBWIO](
 
 OBRAH provides an easy-to-use API for:
 
-- Creating OpenCL contexts and command queues  
-- Loading kernels from `.cl` files  
-- Allocating and managing GPU buffers  
-- Running kernels and retrieving results  
+* Creating OpenCL contexts and command queues
+* Loading kernels from `.cl` files
+* Allocating and managing GPU buffers
+* Running kernels and retrieving results
 
 It is ideal for Rust developers who want GPU acceleration without dealing with raw OpenCL FFI.
 
 ## Features
 
-- High-level Rust interface for OpenCL  
-- Built on OBWIO for cross-platform GPU support  
-- Simple buffer management (`buffer_write`, `to_gpu`, `from_gpu`)  
-- Kernel management (`use_kernel`, `make_prog`, `setarg`, `run_kernel`)  
-- Cleanup utilities to safely release OpenCL resources  
+* High-level Rust interface for OpenCL
+* Built on OBWIO for cross-platform GPU support
+* Simple buffer management (`buffer\_write`, `to\_gpu`, `from\_gpu`)
+* Kernel management (`use\_kernel`, `make\_prog`, `setarg`, `run\_kernel`)
+* Cleanup utilities to safely release OpenCL resources
 
 ## Installation
 
 Add OBRAH to your `Cargo.toml`:
 
 ```toml
-[dependencies]
-obrah = "0.1"
+\[dependencies]
+obrah = "1.1.3"
 ```
 
 OBRAH automatically includes OBWIO as a dependency.
 
 ## Requirements
 
-- Rust 1.70 or later
-- OpenCL SDK installed on your system
-- Compatible OpenCL runtime and drivers
+* Rust 1.70 or later
+* OpenCL SDK installed on your system
+* Compatible OpenCL runtime and drivers
 
 ## License
 
@@ -49,5 +49,4 @@ Contributions are welcome! Open issues, submit pull requests, or improve the doc
 ## Acknowledgments
 
 OBRAH is built on OBWIO, which uses bindgen to generate FFI bindings. Thanks to the Rust and OpenCL communities for their documentation and support.
-
 
