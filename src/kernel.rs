@@ -1,15 +1,16 @@
 use obwio::*;
 use crate::runtime::Env;
 use std::ffi::CString;
+use crate::data::Buffer;
 
 
 /// setarg() sets an argument. To make sure it works properly, initialize your variables in the order they are
 /// used in the kernel.
-pub fn setarg(env: &mut Env, arg_idx: usize) {
+pub fn setarg(env: &mut Env, buffer: &mut Buffer, arg: usize) {
     unsafe {
         let size = std::mem::size_of::<cl_mem>();
-        let buf_ptr: *const cl_mem = &env.buffers[arg_idx];
-        clSetKernelArg(env.kernel, arg_idx as u32, size, buf_ptr as *const _);
+        let buf_ptr: *const cl_mem = &env.buffers[buffer.buffer];
+        clSetKernelArg(env.kernel, arg as u32, size, buf_ptr as *const _);
         if env.err != 0 {
             panic!("OpenCL error: {}", env.err);
         }

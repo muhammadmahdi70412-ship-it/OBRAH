@@ -17,8 +17,27 @@ pub struct Env {
 }
 
 
+impl Env {
+    pub fn new() -> Self {
+        setup()
+    }
+    pub fn program(&mut self) {
+        make_prog(self);
+    }
+    pub fn use_kernel(&mut self, path: &str) {
+        use_kernel(self, path);
+    }
+}
+
+impl Drop for Env {
+    fn drop(&mut self) {
+        cleanup(self);
+    }
+}
+
+
 /// The setup() function sets the platform, device, context and queue and initialises everything.
-pub fn setup() -> Env {
+fn setup() -> Env {
     unsafe{
         let mut platform: cl_platform_id = std::ptr::null_mut();
         clGetPlatformIDs(1, &mut platform, std::ptr::null_mut());
@@ -55,7 +74,7 @@ pub fn setup() -> Env {
 
 
 // The make_prog() function uses the kernel and initialisations to make the actual OpenCL Programs
-pub fn make_prog(env: &mut Env) {
+fn make_prog(env: &mut Env) {
     unsafe {
         let source = env.kerncode.as_ref().expect("Kernel not loaded!");
 
@@ -72,12 +91,16 @@ pub fn make_prog(env: &mut Env) {
     }
 }
 
-pub fn use_kernel(env: &mut Env, path: &str) {
+
+/// use_kernel() loads the kernel from a path.
+fn use_kernel(env: &mut Env, path: &str) {
     let source = fs::read_to_string(path).expect("Failed to read kernel file");
     env.kerncode = Some(source);
 }
 
-pub fn cleanup(env: &mut Env) {
+
+/// cleanup() cleans the setup variables. This is placed at the end of the program.
+fn cleanup(env: &mut Env) {
     unsafe{
         clReleaseKernel(env.kernel);
         clReleaseProgram(env.program);
@@ -86,6 +109,7 @@ pub fn cleanup(env: &mut Env) {
     }
 }
 
+/// cleanvar() cleans the buffer.
 pub fn cleanvar (env: &mut Env, idx: usize) {
     unsafe {
         clReleaseMemObject(env.buffers[idx]);
