@@ -2,6 +2,8 @@ use obwio::*;
 use std::fs;
 use std::ffi::CString;
 
+use crate::data::Buffer;
+
 
 /// This structure holds all the data; the platform, the device, the variables, etc.
 pub struct Env {
@@ -11,7 +13,6 @@ pub struct Env {
     pub queue: cl_command_queue,
     pub program: cl_program,
     pub kernel: cl_kernel,
-    pub buffers: Vec<cl_mem>,
     pub kerncode: Option<String>,
     pub err: cl_int,
 }
@@ -63,7 +64,6 @@ fn setup() -> Env {
             queue,
             program: std::ptr::null_mut(),
             kernel: std::ptr::null_mut(),
-            buffers: Vec::new(),
             kerncode: None,
             err
         }
@@ -110,8 +110,8 @@ fn cleanup(env: &mut Env) {
 }
 
 /// cleanvar() cleans the buffer.
-pub fn cleanvar (env: &mut Env, idx: usize) {
+pub fn cleanvar (buf: &mut Buffer) {
     unsafe {
-        clReleaseMemObject(env.buffers[idx]);
+        clReleaseMemObject(buf.buffer);
     }
 }
