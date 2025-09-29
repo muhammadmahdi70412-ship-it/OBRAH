@@ -1,6 +1,4 @@
-__kernel void vecAdd(__global const float* a,
-                     __global const float* b,
-                     __global float* c) {
+__kernel void vec_add(__global const float* a, __global const float* b, __global float* result) {
     int id = get_global_id(0);
-    c[id] = a[id] + b[id];
+    result[id] = a[id] + b[id];
 }
