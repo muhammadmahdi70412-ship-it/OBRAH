@@ -3,14 +3,14 @@ use obrah::data::Buffer;
 use obrah::kernel::{make_kernel, setarg, run_kernel};
 
 fn main() {
+    // Setup
     let mut env = Env::new();
-    env.use_kernel("kernel.cl");
+    env.use_kernel("examples/vecadd_kernel.cl");
     env.program();
     make_kernel(&mut env, "vec_add");
 
-    // Input vectors
-    let mut a = vec![1.0f32, 2.0, 3.0, 4.0];
-    let mut b = vec![10.0f32, 20.0, 30.0, 40.0];
+    let mut a = vec![7.0f32, 8.0, 2.0, 6.0];
+    let mut b = vec![134.0f32, 134.11, 34.8, 112.9];
     let mut result = vec![0.0f32; a.len()];
 
     // Buffers

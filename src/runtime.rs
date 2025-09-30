@@ -6,6 +6,18 @@ use crate::data::Buffer;
 
 
 /// This structure holds all the data; the platform, the device, the variables, etc.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// 
+/// fn main() {
+///     use obrah::runtime::Env;
+///     let mut env = Env::new();
+///     env.use_kernel("examples/vecadd_kernel.cl");
+///     env.program();
+/// }
+/// ``````
 pub struct Env {
     pub platform: cl_platform_id,
     pub device: cl_device_id,
@@ -19,12 +31,15 @@ pub struct Env {
 
 
 impl Env {
+    /// new() creates a new Env.
     pub fn new() -> Self {
         setup()
     }
+    /// program() programs and sets up the environment.
     pub fn program(&mut self) {
         make_prog(self);
     }
+    /// use_kernel() uses a kernel from a path.
     pub fn use_kernel(&mut self, path: &str) {
         use_kernel(self, path);
     }
@@ -38,6 +53,7 @@ impl Drop for Env {
 
 
 /// The setup() function sets the platform, device, context and queue and initialises everything.
+/// Setup is only done on Env::new(), and you cannot call it by itself.
 fn setup() -> Env {
     unsafe{
         let mut platform: cl_platform_id = std::ptr::null_mut();
@@ -73,7 +89,7 @@ fn setup() -> Env {
 
 
 
-// The make_prog() function uses the kernel and initialisations to make the actual OpenCL Programs
+// The make_prog() function uses the kernel and initialisations to make the actual OpenCL programs.
 fn make_prog(env: &mut Env) {
     unsafe {
         let source = env.kerncode.as_ref().expect("Kernel not loaded!");
@@ -99,7 +115,18 @@ fn use_kernel(env: &mut Env, path: &str) {
 }
 
 
-/// cleanup() cleans the setup variables. This is placed at the end of the program.
+/// cleanup() cleans the setup variables. This is used automatically by Drop for the Env struct.
+/// It cannot be called on it's own.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use obrah::runtime::Env;
+/// 
+/// fn main () {
+///     let env = Env::new();
+/// } //<- automatically cleaned up
+/// ```
 fn cleanup(env: &mut Env) {
     unsafe{
         clReleaseKernel(env.kernel);
@@ -109,9 +136,4 @@ fn cleanup(env: &mut Env) {
     }
 }
 
-/// cleanvar() cleans the buffer.
-pub fn cleanvar (buf: &mut Buffer) {
-    unsafe {
-        clReleaseMemObject(buf.buffer);
-    }
-}
+

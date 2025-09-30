@@ -2,15 +2,66 @@ use obwio::*;
 use crate::runtime::Env;
 use std::ffi::CString;
 use crate::data::Buffer;
+use std::ffi::c_void;
 
 
-/// setarg() sets an argument. To make sure it works properly, initialize your variables in the order they are
-/// used in the kernel.
-pub fn setarg(env: &Env, buffer: &mut Buffer, arg: usize) {
+/// setarg() sets an argument. For scalar values, use setarg_scalar().
+/// The third parameter, arg, is the 0-based index of the kernel argument. 
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use obrah::kernel;
+/// use obrah::runtime;
+/// use obrah::data;
+/// use obrah::runtime::Env;
+/// 
+/// fn main() {
+///     let mut env = Env::new();
+///     env.use_kernel("examples/vecadd_kernel.cl");
+///     env.program();
+///     kernel::make_kernel(&mut env, "vec_add");
+///     //kernel::make_kernel(&mut env, "kernel_name");
+/// 
+///     let mut a = vec![7.0f32, 8.0, 2.0, 6.0];
+///     let mut b = vec![134.0f32, 134.11, 34.8, 112.9];
+///     let mut result = vec![0.0f32; a.len()];
+/// 
+///     // Buffers
+///     let mut buf_a = data::Buffer::new(&mut env, &mut a);
+///     let mut buf_b = data::Buffer::new(&mut env, &mut b);
+///     let mut buf_result = data::Buffer::new(&mut env, &mut result);
+/// 
+///      // Send data to GPU
+///     buf_a.to(&a, &mut env);
+///     buf_b.to(&b, &mut env);
+/// 
+///     // Set kernel arguments
+///     kernel::setarg(&env, &mut buf_a, 0);
+///     kernel::setarg(&env, &mut buf_b, 1);
+///     kernel::setarg(&env, &mut buf_result, 2);
+/// }
+/// ```
+/// 
+pub fn setarg(env: &Env, buffer: &Buffer, arg: usize) {
     unsafe {
         let size = std::mem::size_of::<cl_mem>();
         let buf_ptr: *const std::ffi::c_void = &buffer.buffer as *const _ as *const _;
         clSetKernelArg(env.kernel, arg as u32, size, buf_ptr as *const _);
+        if env.err != 0 {
+            panic!("OpenCL error: {}", env.err);
+        }
+    }
+}
+
+/// Set a scalar argument.
+/// Scalar arguments are single-data types, such as
+/// floats and integers.
+/// They cannot be read from.
+pub fn setarg_scalar<T>(env: &Env, val: &T, arg: usize) {
+    unsafe {
+        let size = std::mem::size_of::<T>();
+        clSetKernelArg(env.kernel, arg as u32, size, val as *const T as *const c_void);
         if env.err != 0 {
             panic!("OpenCL error: {}", env.err);
         }

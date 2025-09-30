@@ -1,6 +1,6 @@
 # OBRAH
 
-OBRAH (OpenCL But Rusty And High-level) is a Rust crate built on top of [OBWIO](https://github.com/muhammadmahdi70412-ship-it/obwio)(crates.io: [OBWIO](https://crates.io/crates/obwio), providing a **high-level, ergonomic interface for OpenCL**. It abstracts low-level C bindings, letting you perform GPU computations with minimal boilerplate.
+OBRAH (OpenCL But Rusty And High-level) is a Rust crate built on top of [OBWIO](https://github.com/muhammadmahdi70412-ship-it/obwio)(crates.io: [OBWIO](https://crates.io/crates/obwio)), providing a **high-level, ergonomic interface for OpenCL**. It abstracts low-level C bindings, letting you perform GPU computations with minimal boilerplate.
 
 ## Overview
 
