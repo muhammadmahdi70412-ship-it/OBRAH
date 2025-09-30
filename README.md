@@ -27,7 +27,7 @@ Add OBRAH to your `Cargo.toml`:
 
 ```toml
 \[dependencies]
-obrah = "2.1.0"
+obrah = "2.1.2"
 ```
 
 OBRAH automatically includes OBWIO as a dependency.
