@@ -58,7 +58,7 @@ pub fn setarg(env: &Env, buffer: &Buffer, arg: usize) {
 use std::ffi::CStr;
 use std::ptr;
 
-pub fn firstdevice() {
+pub fn device(num: usize) {
     unsafe {
         // Get platform
         let mut num_platforms = 0;
@@ -74,9 +74,9 @@ pub fn firstdevice() {
 
         // Get device name
         let mut size = 0;
-        clGetDeviceInfo(devices[1], CL_DEVICE_NAME, 0, ptr::null_mut(), &mut size);
+        clGetDeviceInfo(devices[num], CL_DEVICE_NAME, 0, ptr::null_mut(), &mut size);
         let mut name_buf = vec![0u8; size];
-        clGetDeviceInfo(devices[1], CL_DEVICE_NAME, size, name_buf.as_mut_ptr() as *mut _, ptr::null_mut());
+        clGetDeviceInfo(devices[num], CL_DEVICE_NAME, size, name_buf.as_mut_ptr() as *mut _, ptr::null_mut());
 
         let name = CStr::from_bytes_with_nul(&name_buf).unwrap();
         println!("First OpenCL device: {}", name.to_str().unwrap());
