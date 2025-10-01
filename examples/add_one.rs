@@ -17,7 +17,7 @@ fn main() {
     };
 
 
-    let mut env = runtime::Env::new();
+    let mut env = runtime::Env::new(false);
     env.use_kernel("examples/add_one_kernel.cl");
     env.program();
     kernel::make_kernel(&mut env, "add_one");

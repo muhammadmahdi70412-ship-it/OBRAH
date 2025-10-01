@@ -4,7 +4,7 @@ use obrah::kernel::{make_kernel, setarg, run_kernel};
 
 fn main() {
     // Setup
-    let mut env = Env::new();
+    let mut env = Env::new(false);
     env.use_kernel("examples/vecadd_kernel.cl");
     env.program();
     make_kernel(&mut env, "vec_add");

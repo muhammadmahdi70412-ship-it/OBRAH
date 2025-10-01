@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "obrah"
-version = "2.2.2"
+version = "2.3.0"
 dependencies = [
  "cc",
  "obwio",

@@ -31,8 +31,8 @@ pub struct Env {
 
 impl Env {
     /// new() creates a new Env.
-    pub fn new() -> Self {
-        setup()
+    pub fn new(gpu: bool) -> Self {
+        setup(gpu)
     }
     /// program() programs and sets up the environment.
     pub fn program(&mut self) {
@@ -53,38 +53,77 @@ impl Drop for Env {
 
 /// The setup() function sets the platform, device, context and queue and initialises everything.
 /// Setup is only done on Env::new(), and you cannot call it by itself.
-fn setup() -> Env {
+fn setup(gpu: bool) -> Env {
     unsafe{
-        let mut platform: cl_platform_id = std::ptr::null_mut();
-        clGetPlatformIDs(1, &mut platform, std::ptr::null_mut());
+        if !gpu {
+            let mut platform: cl_platform_id = std::ptr::null_mut();
+            clGetPlatformIDs(1, &mut platform, std::ptr::null_mut());
 
-        let mut device: cl_device_id = std::ptr::null_mut();
-        clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU.into(), 1, &mut device, std::ptr::null_mut());
+            let mut device: cl_device_id = std::ptr::null_mut();
+            clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU.into(), 1, &mut device, std::ptr::null_mut());
 
-        let mut err: cl_int = 0;
+            let mut err: cl_int = 0;
 
     
-        let context = clCreateContext(std::ptr::null_mut(), 1, &device, None, std::ptr::null_mut(), &mut err);
+            let context = clCreateContext(std::ptr::null_mut(), 1, &device, None, std::ptr::null_mut(), &mut err);
 
-        let queue = clCreateCommandQueue(context, device, 0, &mut err);
+            let queue = clCreateCommandQueue(context, device, 0, &mut err);
 
-        if err != 0 {
-            panic!("OpenCL error: {}", err);
-        }
+            if err != 0 {
+                panic!("OpenCL error: {}", err);
+            }
 
-        Env {
-            platform,
-            device,
-            context,
-            queue,
-            program: std::ptr::null_mut(),
-            kernel: std::ptr::null_mut(),
-            kerncode: None,
-            err
+            return Env {
+                platform,
+                device,
+                context,
+                queue,
+                program: std::ptr::null_mut(),
+                kernel: std::ptr::null_mut(),
+                kerncode: None,
+                err
+            }
+        } else {
+            let mut num_platforms = 0;
+            clGetPlatformIDs(0, std::ptr::null_mut(), &mut num_platforms);
+            if num_platforms == 1 {
+                panic!("You don't have a dGPU! If you are sure you do, then please wait for a future update while I fix it - it is a top priority.")
+            }
+            let mut platforms = vec![std::ptr::null_mut(); num_platforms as usize];
+            clGetPlatformIDs(num_platforms, platforms.as_mut_ptr(), std::ptr::null_mut());
+            let platform = platforms[1]; // second platform
+
+            let mut device: cl_device_id = std::ptr::null_mut();
+            clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU.into(), 1, &mut device, std::ptr::null_mut());
+
+            let mut err: cl_int = 0;
+
+    
+            let context = clCreateContext(std::ptr::null_mut(), 1, &device, None, std::ptr::null_mut(), &mut err);
+
+            let queue = clCreateCommandQueue(context, device, 0, &mut err);
+
+            if err != 0 {
+                panic!("OpenCL error: {}", err);
+            }
+
+            return Env {
+                platform,
+                device,
+                context,
+                queue,
+                program: std::ptr::null_mut(),
+                kernel: std::ptr::null_mut(),
+                kerncode: None,
+                err
+            }
+
         }
 
     }
+
 }
+
 
 
 
