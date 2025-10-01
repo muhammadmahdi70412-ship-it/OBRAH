@@ -2,7 +2,6 @@ use obwio::*;
 use std::fs;
 use std::ffi::CString;
 
-use crate::data::Buffer;
 
 
 /// This structure holds all the data; the platform, the device, the variables, etc.
