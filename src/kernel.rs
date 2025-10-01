@@ -54,6 +54,35 @@ pub fn setarg(env: &Env, buffer: &Buffer, arg: usize) {
     }
 }
 
+
+use std::ffi::CStr;
+use std::ptr;
+
+pub fn firstdevice() {
+    unsafe {
+        // Get platform
+        let mut num_platforms = 0;
+        clGetPlatformIDs(0, ptr::null_mut(), &mut num_platforms);
+        let mut platforms = vec![std::ptr::null_mut(); num_platforms as usize];
+        clGetPlatformIDs(num_platforms, platforms.as_mut_ptr(), ptr::null_mut());
+
+        // Get devices
+        let mut num_devices = 0;
+        clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL.into(), 0, ptr::null_mut(), &mut num_devices);
+        let mut devices = vec![std::ptr::null_mut(); num_devices as usize];
+        clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL.into(), num_devices, devices.as_mut_ptr(), ptr::null_mut());
+
+        // Get device name
+        let mut size = 0;
+        clGetDeviceInfo(devices[0], CL_DEVICE_NAME, 0, ptr::null_mut(), &mut size);
+        let mut name_buf = vec![0u8; size];
+        clGetDeviceInfo(devices[0], CL_DEVICE_NAME, size, name_buf.as_mut_ptr() as *mut _, ptr::null_mut());
+
+        let name = CStr::from_bytes_with_nul(&name_buf).unwrap();
+        println!("First OpenCL device: {}", name.to_str().unwrap());
+    }
+}
+
 /// Set a scalar argument.
 /// Scalar arguments are single-data types, such as
 /// floats and integers.
