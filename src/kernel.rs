@@ -55,33 +55,34 @@ pub fn setarg(env: &Env, buffer: &Buffer, arg: usize) {
 }
 
 
-use std::ffi::CStr;
-use std::ptr;
-
-pub fn device(num: usize) {
+pub fn get_devices() {
     unsafe {
-        // Get platform
         let mut num_platforms = 0;
-        clGetPlatformIDs(0, ptr::null_mut(), &mut num_platforms);
+        clGetPlatformIDs(0, std::ptr::null_mut(), &mut num_platforms);
         let mut platforms = vec![std::ptr::null_mut(); num_platforms as usize];
-        clGetPlatformIDs(num_platforms, platforms.as_mut_ptr(), ptr::null_mut());
+        clGetPlatformIDs(num_platforms, platforms.as_mut_ptr(), std::ptr::null_mut());
 
-        // Get devices
-        let mut num_devices = 0;
-        clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL.into(), 0, ptr::null_mut(), &mut num_devices);
-        let mut devices = vec![std::ptr::null_mut(); num_devices as usize];
-        clGetDeviceIDs(platforms[0], CL_DEVICE_TYPE_ALL.into(), num_devices, devices.as_mut_ptr(), ptr::null_mut());
+        for (p_idx, &platform) in platforms.iter().enumerate() {
+            println!("Platform {}:", p_idx);
 
-        // Get device name
-        let mut size = 0;
-        clGetDeviceInfo(devices[num], CL_DEVICE_NAME, 0, ptr::null_mut(), &mut size);
-        let mut name_buf = vec![0u8; size];
-        clGetDeviceInfo(devices[num], CL_DEVICE_NAME, size, name_buf.as_mut_ptr() as *mut _, ptr::null_mut());
+            let mut num_devices = 0;
+            clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL.into(), 0, std::ptr::null_mut(), &mut num_devices);
+            let mut devices = vec![std::ptr::null_mut(); num_devices as usize];
+            clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL.into(), num_devices, devices.as_mut_ptr(), std::ptr::null_mut());
 
-        let name = CStr::from_bytes_with_nul(&name_buf).unwrap();
-        println!("First OpenCL device: {}", name.to_str().unwrap());
+            for (d_idx, &device) in devices.iter().enumerate() {
+                let mut size = 0;
+                clGetDeviceInfo(device, CL_DEVICE_NAME, 0, std::ptr::null_mut(), &mut size);
+                let mut name_buf = vec![0u8; size];
+                clGetDeviceInfo(device, CL_DEVICE_NAME, size, name_buf.as_mut_ptr() as *mut _, std::ptr::null_mut());
+
+                let name = std::ffi::CStr::from_bytes_with_nul(&name_buf).unwrap();
+                println!("  Device {}: {}", d_idx, name.to_str().unwrap());
+            }
+        }
     }
 }
+
 
 /// Set a scalar argument.
 /// Scalar arguments are single-data types, such as

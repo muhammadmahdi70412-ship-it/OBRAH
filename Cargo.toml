@@ -1,6 +1,6 @@
 [package]
 name = "obrah"
-version = "2.2.1"
+version = "2.2.2"
 edition = "2024"
 authors = ["Muhammad Mahdi"]
 license = "Apache-2.0"
