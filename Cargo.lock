@@ -194,9 +194,9 @@ dependencies = [
 
 [[package]]
 name = "obwio"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e89c85cde9391bba84334c361e6aa88ca847efa7f69d31a9f82089085647e21c"
+checksum = "a1e343024cf613362c6dfd53eb0e382efb5b0aeaf68e932c8209608eb5bbfb75"
 dependencies = [
  "bindgen",
 ]

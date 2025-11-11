@@ -17,7 +17,7 @@ use std::ffi::c_void;
 /// use obrah::runtime::Env;
 /// 
 /// fn main() {
-///     let mut env = Env::new();
+///     let mut env = Env::new(0, 0);
 ///     env.use_kernel("examples/vecadd_kernel.cl");
 ///     env.program();
 ///     kernel::make_kernel(&mut env, "vec_add");
