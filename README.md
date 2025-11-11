@@ -17,8 +17,8 @@ It is ideal for Rust developers who want GPU acceleration without dealing with r
 
 * High-level Rust interface for OpenCL
 * Built on OBWIO for cross-platform GPU support
-* Simple buffer management (`buffer\_write`, `to\_gpu`, `from\_gpu`)
-* Kernel management (`use\_kernel`, `make\_prog`, `setarg`, `run\_kernel`)
+* Simple buffer management (`buffer.to()`, `buffer.from()`, etc.)
+* Kernel management (`use_kernel()`, `make_kernel()`, etc.)
 * Cleanup utilities to safely release OpenCL resources
 
 ## Installation
@@ -27,16 +27,15 @@ Add OBRAH to your `Cargo.toml`:
 
 ```toml
 \[dependencies]
-obrah = "2.1.2"
+obrah = "3.0.0"
 ```
-
-OBRAH automatically includes OBWIO as a dependency.
 
 ## Requirements
 
 * Rust 1.70 or later
 * OpenCL SDK installed on your system
 * Compatible OpenCL runtime and drivers
+* Set OPENCL_SDK to the path of your OpenCL SDK
 
 ## License
 
@@ -48,5 +47,5 @@ Contributions are welcome! Open issues, submit pull requests, or improve the doc
 
 ## Acknowledgments
 
-OBRAH is built on OBWIO, which uses bindgen to generate FFI bindings. Thanks to the Rust and OpenCL communities for their documentation and support.
+OBRAH is built on OBWIO, which uses `bindgen` to generate FFI bindings. Thanks to the Rust and OpenCL communities for their documentation and support.
 
