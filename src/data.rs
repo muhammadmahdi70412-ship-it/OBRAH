@@ -28,7 +28,7 @@ impl Buffer {
     pub fn from(&mut self, data: &mut Vec<f32>, env: &mut Env) {
         from_gpu(env, data, self);
     }
-    pub fn new(env: &mut Env, data: &mut [f32]) -> Buffer {
+    pub fn new(env: &mut Env, data: &[f32]) -> Buffer {
         buffer_write(env, data)
     }
 }

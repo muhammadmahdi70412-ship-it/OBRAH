@@ -1,7 +1,7 @@
 use obrah::data;
 use obrah::kernel;
 use obrah::runtime;
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut input = String::new();
 
     println!("Enter number to add one to: ");
@@ -15,9 +15,9 @@ fn main() {
     };
 
     let mut env = runtime::Env::new(0, 0); // fix this with the right device - run example get_gpus to see all devices and platforms.
-    env.use_kernel("examples/add_one_kernel.cl");
-    env.program();
-    kernel::make_kernel(&mut env, "add_one");
+    env.use_kernel("examples/add_one_kernel.cl")?
+        .program()
+        .make_kernel("add_one")?;
 
     let mut b = vec![0.0f32];
     let mut bbuf = data::Buffer::new(&mut env, &mut b);
@@ -33,4 +33,5 @@ fn main() {
     bbuf.from(&mut b, &mut env);
 
     println!("Result: {:?}", b[0]);
+    Ok(())
 }

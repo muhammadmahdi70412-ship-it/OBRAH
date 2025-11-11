@@ -1,5 +1,6 @@
 use obwio::*;
 use std::ffi::CString;
+use std::fmt;
 use std::fs;
 
 /// This structure holds all the data; the platform, the device, the variables, etc.
@@ -25,15 +26,56 @@ pub struct Env {
     pub kerncode: Option<String>,
     pub err: cl_int,
 }
+#[derive(Debug)]
+pub enum ClError {
+    InvalidProgram,
+    InvalidKernelName,
+    OutOfResources,
+    UnknownError(i32),
+}
+
+impl fmt::Display for ClError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidKernelName => {
+                write!(f, "Kernel name not found")
+            }
+            Self::InvalidProgram => {
+                write!(f, "Program not found")
+            }
+            Self::OutOfResources => {
+                write!(f, "Out of resources")
+            }
+            Self::UnknownError(unkwn) => {
+                write!(f, "Unknown error code: {unkwn}")
+            }
+        }
+    }
+}
+
+impl From<i32> for ClError {
+    fn from(code: i32) -> Self {
+        match code {
+            -42 => ClError::InvalidProgram,
+            -46 => ClError::InvalidKernelName,
+            -5 => ClError::OutOfResources,
+            _ => ClError::UnknownError(code),
+        }
+    }
+}
+
+impl std::error::Error for ClError {}
 
 impl Env {
     /// Make the kernel.
-    pub fn make_kernel(&mut self, name: &str) {
+    pub fn make_kernel(&mut self, name: &str) -> Result<(), ClError> {
         unsafe {
             let cname = CString::new(name).unwrap();
             self.kernel = clCreateKernel(self.program, cname.as_ptr(), &mut self.err);
-            if self.err != 0 {
-                panic!("OpenCL error: {}", self.err);
+            if self.kernel.is_null() {
+                Err(ClError::from(self.err))
+            } else {
+                Ok(())
             }
         }
     }
@@ -48,9 +90,9 @@ impl Env {
         self
     }
     /// use_kernel() uses a kernel from a path.
-    pub fn use_kernel(&mut self, path: &str) -> &mut Self {
-        use_kernel(self, path);
-        self
+    pub fn use_kernel(&mut self, path: &str) -> Result<&mut Self, Box<dyn std::error::Error>> {
+        use_kernel(self, path)?;
+        Ok(self)
     }
 }
 
@@ -123,7 +165,10 @@ fn setup(plat: usize, dev: usize) -> Env {
 // The make_prog() function uses the kernel and initialisations to make the actual OpenCL programs.
 fn make_prog(env: &mut Env) {
     unsafe {
-        let source = env.kerncode.as_ref().expect("Kernel not loaded!");
+        let source = env
+            .kerncode
+            .as_ref()
+            .expect("Kernel not loaded! Call use_kernel first.");
 
         let c_source = CString::new(source.as_str()).unwrap();
         let mut src_ptr = c_source.as_ptr();
@@ -146,9 +191,10 @@ fn make_prog(env: &mut Env) {
 }
 
 /// use_kernel() loads the kernel from a path.
-fn use_kernel(env: &mut Env, path: &str) {
-    let source = fs::read_to_string(path).expect("Failed to read kernel file");
+fn use_kernel(env: &mut Env, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let source = fs::read_to_string(path)?;
     env.kerncode = Some(source);
+    Ok(())
 }
 
 /// cleanup() cleans the setup variables. This is used automatically by Drop for the Env struct.

@@ -2,21 +2,21 @@ use obrah::data::Buffer;
 use obrah::kernel::{run_kernel, setarg};
 use obrah::runtime::Env;
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Setup
     let mut env = Env::new(0, 0);
-    env.use_kernel("examples/vecadd_kernel.cl")
+    env.use_kernel("examples/vecadd_kernel.cl")?
         .program()
-        .make_kernel("vec_add");
+        .make_kernel("vec_add")?;
 
-    let mut a = vec![7.0f32, 8.0, 2.0, 6.0];
-    let mut b = vec![134.0f32, 134.11, 34.8, 112.9];
+    let a = vec![7.0f32, 8.0, 2.0, 6.0];
+    let b = vec![134.0f32, 134.11, 34.8, 112.9];
     let mut result = vec![0.0f32; a.len()];
 
     // Buffers
-    let mut buf_a = Buffer::new(&mut env, &mut a);
-    let mut buf_b = Buffer::new(&mut env, &mut b);
-    let mut buf_result = Buffer::new(&mut env, &mut result);
+    let mut buf_a = Buffer::new(&mut env, &a);
+    let mut buf_b = Buffer::new(&mut env, &b);
+    let mut buf_result = Buffer::new(&mut env, &result);
 
     // Send data to GPU
     buf_a.to(&mut env);
@@ -34,4 +34,5 @@ fn main() {
     buf_result.from(&mut result, &mut env);
 
     println!("Result: {:#?}", result);
+    Ok(())
 }
