@@ -12,14 +12,12 @@ use std::ffi::c_void;
 /// use obrah::kernel;
 /// use obrah::runtime;
 /// use obrah::data;
-/// use obrah::runtime::Env;
+/// use obrah::runtime::{ClError, Env};
 ///
-/// fn main() {
-///     let mut env = Env::new(0, 0);
-///     env.use_kernel("examples/vecadd_kernel.cl");
-///     env.program();
-///     kernel::make_kernel(&mut env, "vec_add");
-///     //kernel::make_kernel(&mut env, "kernel_name");
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+///
+///     let mut env = Env::new(0, 0)?;
+///     env.use_kernel("examples/vecadd_kernel.cl")?.program()?.make_kernel("vec_add")?;
 ///
 ///     let mut a = vec![7.0f32, 8.0, 2.0, 6.0];
 ///     let mut b = vec![134.0f32, 134.11, 34.8, 112.9];
@@ -31,13 +29,14 @@ use std::ffi::c_void;
 ///     let mut buf_result = data::Buffer::new(&mut env, &mut result);
 ///
 ///      // Send data to GPU
-///     buf_a.to(&a, &mut env);
-///     buf_b.to(&b, &mut env);
+///     buf_a.to(&mut env);
+///     buf_b.to(&mut env);
 ///
 ///     // Set kernel arguments
 ///     kernel::setarg(&env, &mut buf_a, 0);
 ///     kernel::setarg(&env, &mut buf_b, 1);
 ///     kernel::setarg(&env, &mut buf_result, 2);
+/// Ok(())
 /// }
 /// ```
 ///

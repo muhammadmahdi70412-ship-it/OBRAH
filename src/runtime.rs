@@ -9,11 +9,10 @@ use std::fs;
 ///
 /// ```rust
 ///
-/// fn main() {
-///     use obrah::runtime::Env;
+/// fn main() -> Result((), ClError) {
+///     use obrah::runtime::{ClError, Env};
 ///     let mut env = Env::new(0, 0);
-///     env.use_kernel("examples/vecadd_kernel.cl");
-///     env.program();
+///     env.use_kernel("examples/vecadd_kernel.cl").program()?;
 /// }
 /// ``````
 pub struct Env {
@@ -31,6 +30,10 @@ pub enum ClError {
     InvalidProgram,
     InvalidKernelName,
     OutOfResources,
+    OutOfMemory,
+    InvalidContext,
+    BuildProgramFailed,
+    NonexistentPlatform,
     UnknownError(i32),
 }
 
@@ -49,6 +52,18 @@ impl fmt::Display for ClError {
             Self::UnknownError(unkwn) => {
                 write!(f, "Unknown error code: {unkwn}")
             }
+            Self::InvalidContext => {
+                write!(f, "Invalid context")
+            }
+            Self::OutOfMemory => {
+                write!(f, "Out of memory")
+            }
+            Self::BuildProgramFailed => {
+                write!(f, "Failed to build program.")
+            }
+            Self::NonexistentPlatform => {
+                write!(f, "Platform out of range")
+            }
         }
     }
 }
@@ -59,6 +74,9 @@ impl From<i32> for ClError {
             -42 => ClError::InvalidProgram,
             -46 => ClError::InvalidKernelName,
             -5 => ClError::OutOfResources,
+            -6 => ClError::OutOfMemory,
+            -34 => ClError::InvalidContext,
+            -11 => ClError::BuildProgramFailed,
             _ => ClError::UnknownError(code),
         }
     }
@@ -81,13 +99,13 @@ impl Env {
     }
 
     /// new() creates a new Env.
-    pub fn new(plat: usize, dev: usize) -> Self {
+    pub fn new(plat: usize, dev: usize) -> Result<Self, ClError> {
         setup(plat, dev)
     }
     /// program() programs and sets up the environment.
-    pub fn program(&mut self) -> &mut Self {
-        make_prog(self);
-        self
+    pub fn program(&mut self) -> Result<&mut Self, ClError> {
+        make_prog(self)?;
+        Ok(self)
     }
     /// use_kernel() uses a kernel from a path.
     pub fn use_kernel(&mut self, path: &str) -> Result<&mut Self, Box<dyn std::error::Error>> {
@@ -104,10 +122,13 @@ impl Drop for Env {
 
 /// The setup() function sets the platform, device, context and queue and initialises everything.
 /// Setup is only done on Env::new(), and you cannot call it by itself.
-fn setup(plat: usize, dev: usize) -> Env {
+fn setup(plat: usize, dev: usize) -> Result<Env, ClError> {
     unsafe {
         let mut num_platforms: cl_uint = 0;
         clGetPlatformIDs(0, std::ptr::null_mut(), &mut num_platforms);
+        if plat >= num_platforms as usize {
+            return Err(ClError::NonexistentPlatform)
+        }
 
         let mut platforms: Vec<cl_platform_id> = vec![std::ptr::null_mut(); num_platforms as usize];
         clGetPlatformIDs(num_platforms, platforms.as_mut_ptr(), std::ptr::null_mut());
@@ -120,6 +141,10 @@ fn setup(plat: usize, dev: usize) -> Env {
             std::ptr::null_mut(),
             &mut num_devices,
         );
+
+        if dev >= num_devices as usize {
+            return Err(ClError::NonexistentPlatform)
+        }
 
         let mut devices: Vec<cl_device_id> = vec![std::ptr::null_mut(); num_devices as usize];
         clGetDeviceIDs(
@@ -149,6 +174,7 @@ fn setup(plat: usize, dev: usize) -> Env {
         if err != 0 {
             panic!("OpenCL error: {}", err);
         }
+        Ok(
         Env {
             platform,
             device,
@@ -159,11 +185,12 @@ fn setup(plat: usize, dev: usize) -> Env {
             kerncode: None,
             err,
         }
+        )
     }
 }
 
 // The make_prog() function uses the kernel and initialisations to make the actual OpenCL programs.
-fn make_prog(env: &mut Env) {
+fn make_prog(env: &mut Env) -> Result<(), ClError> {
     unsafe {
         let source = env
             .kerncode
@@ -174,19 +201,24 @@ fn make_prog(env: &mut Env) {
         let mut src_ptr = c_source.as_ptr();
         let program =
             clCreateProgramWithSource(env.context, 1, &mut src_ptr, std::ptr::null(), &mut env.err);
-
-        clBuildProgram(
-            program,
-            1,
-            &env.device,
-            std::ptr::null_mut(),
-            None,
-            std::ptr::null_mut(),
-        );
-        if env.err != 0 {
-            panic!("OpenCL error: {}", env.err);
+        if program.is_null() {
+            Err(ClError::from(env.err))
+        } else {
+            let builderr = clBuildProgram(
+                program,
+                1,
+                &env.device,
+                std::ptr::null_mut(),
+                None,
+                std::ptr::null_mut(),
+            );
+            if builderr != 0 {
+                Err(ClError::from(builderr))
+             } else {
+                env.program = program;
+                Ok(())
+            }
         }
-        env.program = program
     }
 }
 

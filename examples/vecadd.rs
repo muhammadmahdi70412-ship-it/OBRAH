@@ -1,12 +1,12 @@
 use obrah::data::Buffer;
-use obrah::kernel::{run_kernel, setarg};
+use obrah::kernel::*;
 use obrah::runtime::Env;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Setup
-    let mut env = Env::new(0, 0);
+    let mut env = Env::new(0, 0)?;
     env.use_kernel("examples/vecadd_kernel.cl")?
-        .program()
+        .program()?
         .make_kernel("vec_add")?;
 
     let a = vec![7.0f32, 8.0, 2.0, 6.0];

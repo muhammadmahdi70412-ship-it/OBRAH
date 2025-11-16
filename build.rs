@@ -1,4 +1,3 @@
-
 fn main() {
     // Try to read the environment variable OPENCL_SDK.
     if let Ok(path) = std::env::var("OPENCL_SDK") {
