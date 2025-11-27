@@ -5,7 +5,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut input = String::new();
 
     println!("Enter number to add one to: ");
-    std::io::stdin().read_line(&mut input).expect("Failed reading input");
+    std::io::stdin()
+        .read_line(&mut input)
+        .expect("Failed reading input");
 
     let trimmed = input.trim();
 
@@ -28,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     kernel::setarg_scalar(&env, &a, 0);
     kernel::setarg(&env, &bbuf, 1);
 
-    kernel::run_kernel(&mut env, 1);
+    kernel::run_kernel(&mut env, 1, 1);
 
     bbuf.from(&mut b, &mut env);
 

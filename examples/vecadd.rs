@@ -28,7 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     setarg(&env, &buf_result, 2);
 
     // Run kernel
-    run_kernel(&mut env, a.len());
+    run_kernel(&mut env, a.len(), 1);
 
     // Read result
     buf_result.from(&mut result, &mut env);

@@ -116,14 +116,14 @@ pub fn setarg_scalar<T>(env: &Env, val: &T, arg: usize) {
     }
 }
 
-/// Run the kernel! Simply input the number of threads.
-pub fn run_kernel(env: &mut Env, threads: usize) {
+/// Run the kernel! Simply input the number of threads in the x, and threads in the y.
+pub fn run_kernel(env: &mut Env, threadsx: usize, threadsy: usize) {
     unsafe {
-        let global_work_size: [usize; 1] = [threads];
+        let global_work_size: [usize; 2] = [threadsx, threadsy];
         clEnqueueNDRangeKernel(
             env.queue,
             env.kernel,
-            1,
+            2,
             std::ptr::null(),
             global_work_size.as_ptr(),
             std::ptr::null(),
