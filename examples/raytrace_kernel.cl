@@ -27,15 +27,15 @@ __kernel void raytrace(__global float4 *image_buf, const int width,
       float distl_z = light.z - z;
       // onto brightness calculations
       float ldist = sqrt(distl_x * distl_x + distl_y * distl_y +
-                         distl_z * distl_z); // formula for distance in 3d
+                         distl_z * distl_z); // formula for distance in 3D
       float I = 2.0f;                        // constant for inverse-square
       float3 surfacePos = (float3)(x, y, z); // the surface position
       float3 N = normalize(
           surfacePos -
           (float3)(sphere.x, sphere.y,
                    sphere.z)); // calculated by normalizing the difference
-                               // between the sphere and the point - this gives
-                               // us a surface normal.
+                               // between the sphere center and the point - this
+                               // gives us a surface normal, or direction.
       float3 L = normalize((float3)(light.x, light.y, light.z) -
                            surfacePos); // the difference between the point and
                                         // the light gives us another thing
@@ -47,7 +47,10 @@ __kernel void raytrace(__global float4 *image_buf, const int width,
       float3 baseColor = (float3)(70.0f / 255.0f, 130.0f / 255.0f,
                                   180.0f / 255.0f); // steel blue
       float ambient = 0.1f;                         // base brightness
-      rgb = (ambient + brightness) * baseColor;     // multiply by brightness
+      float3 V = (float3)(0.0f, 0.0f, 1.0f);
+      float rim = pow(fmax(0.0f, 1.0f - dot(N, V)), 5.0f) * 0.25f;
+      rgb = (ambient + brightness) * baseColor +
+            rim * (float3)(0.3f, 0.5f, 1.0f); // multiply by brightness
     }
   }
 
