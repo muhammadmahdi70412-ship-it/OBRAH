@@ -15,25 +15,40 @@ use obwio::*;
 /// let buf = Buffer::new(&mut env, &mut data);
 /// ```
 
-pub struct Buffer {
+pub struct Buffer<T>
+where
+    T: Clone + 'static,
+{
     pub buffer: cl_mem,
-    pub data: Vec<f32>,
+    pub data: Vec<T>,
 }
 
-impl Buffer {
+impl<T> Buffer<T>
+where
+    T: Clone + 'static,
+{
     pub fn to(&mut self, env: &mut Env) {
         let mut data = self.data.clone();
         to_gpu(env, &mut data, self);
     }
-    pub fn from(&mut self, data: &mut Vec<f32>, env: &mut Env) {
+    pub fn from(&mut self, data: &mut [T], env: &mut Env)
+    where
+        T: Copy + 'static,
+    {
         from_gpu(env, data, self);
     }
-    pub fn new(env: &mut Env, data: &[f32]) -> Buffer {
+    pub fn new(env: &mut Env, data: &[T]) -> Buffer<T>
+    where
+        T: Clone + 'static,
+    {
         buffer_write(env, data)
     }
 }
 
-impl Drop for Buffer {
+impl<T> Drop for Buffer<T>
+where
+    T: Clone + 'static,
+{
     fn drop(&mut self) {
         cleanvar(self);
     }
@@ -41,7 +56,10 @@ impl Drop for Buffer {
 
 /// Create a buffer in order to be sent to the GPU. This function is used implicitly by Buffer::new().
 /// You don't have to call it.
-fn buffer_write(env: &mut Env, data: &[f32]) -> Buffer {
+fn buffer_write<T>(env: &mut Env, data: &[T]) -> Buffer<T>
+where
+    T: Clone + 'static,
+{
     unsafe {
         let size = data.len() * std::mem::size_of::<f32>();
         let buf = clCreateBuffer(
@@ -64,7 +82,10 @@ fn buffer_write(env: &mut Env, data: &[f32]) -> Buffer {
 
 /// Send the buffer, and the data supposed to be in the buffer, to the GPU.
 /// Used by Buffer.to().
-fn to_gpu(env: &mut Env, data: &mut Vec<f32>, buffer: &mut Buffer) {
+fn to_gpu<T>(env: &mut Env, data: &mut [T], buffer: &mut Buffer<T>)
+where
+    T: Clone + 'static,
+{
     unsafe {
         let size = data.len() * std::mem::size_of::<f32>();
         clEnqueueWriteBuffer(
@@ -86,7 +107,10 @@ fn to_gpu(env: &mut Env, data: &mut Vec<f32>, buffer: &mut Buffer) {
 
 /// Get data from the GPU, from a specific buffer.
 /// Used by Buffer.from().
-fn from_gpu(env: &mut Env, data: &mut Vec<f32>, buf: &mut Buffer) {
+fn from_gpu<T>(env: &mut Env, data: &mut [T], buf: &mut Buffer<T>)
+where
+    T: Copy + 'static,
+{
     unsafe {
         let size = data.len() * std::mem::size_of::<f32>();
         clEnqueueReadBuffer(
@@ -120,7 +144,10 @@ fn from_gpu(env: &mut Env, data: &mut Vec<f32>, buf: &mut Buffer) {
 ///     let buf = Buffer::new(&mut env, &mut data);
 /// } // <- automatically dropped here
 /// ```
-fn cleanvar(buf: &mut Buffer) {
+fn cleanvar<T>(buf: &mut Buffer<T>)
+where
+    T: Clone + 'static,
+{
     unsafe {
         clReleaseMemObject(buf.buffer);
     }

@@ -1,5 +1,5 @@
 use crate::data::Buffer;
-use crate::runtime::Env;
+use crate::runtime::{ClError, Env};
 use obwio::*;
 use std::ffi::c_void;
 
@@ -12,7 +12,7 @@ use std::ffi::c_void;
 /// use obrah::kernel;
 /// use obrah::runtime;
 /// use obrah::data;
-/// use obrah::runtime::{ClError, Env};
+/// use obrah::runtime::Env;
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
@@ -40,14 +40,18 @@ use std::ffi::c_void;
 /// }
 /// ```
 ///
-pub fn setarg(env: &Env, buffer: &Buffer, arg: usize) {
+pub fn setarg<T>(env: &Env, buffer: &Buffer<T>, arg: usize) -> Result<(), ClError>
+where
+    T: Clone + 'static,
+{
     unsafe {
         let size = std::mem::size_of::<cl_mem>();
         let buf_ptr: *const std::ffi::c_void = &buffer.buffer as *const _ as *const _;
         clSetKernelArg(env.kernel, arg as u32, size, buf_ptr as *const _);
         if env.err != 0 {
-            panic!("OpenCL error: {}", env.err);
+            return Err(ClError::from(env.err));
         }
+        Ok(())
     }
 }
 
@@ -101,7 +105,10 @@ pub fn get_devices() {
 /// Scalar arguments are single-data types, such as
 /// floats and integers.
 /// They cannot be read from.
-pub fn setarg_scalar<T>(env: &Env, val: &T, arg: usize) {
+pub fn setarg_scalar<T>(env: &Env, val: &T, arg: usize)
+where
+    T: Clone + 'static,
+{
     unsafe {
         let size = std::mem::size_of::<T>();
         clSetKernelArg(

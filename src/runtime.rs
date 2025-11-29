@@ -25,10 +25,12 @@ pub struct Env {
     pub kerncode: Option<String>,
     pub err: cl_int,
 }
+
 #[derive(Debug)]
 pub enum ClError {
     InvalidProgram,
     InvalidKernelName,
+    InvalidArgIndex,
     OutOfResources,
     OutOfMemory,
     InvalidContext,
@@ -64,6 +66,9 @@ impl fmt::Display for ClError {
             Self::NonexistentPlatform => {
                 write!(f, "Platform out of range")
             }
+            Self::InvalidArgIndex => {
+                write!(f, "Invalid arg index")
+            }
         }
     }
 }
@@ -77,6 +82,7 @@ impl From<i32> for ClError {
             -6 => ClError::OutOfMemory,
             -34 => ClError::InvalidContext,
             -11 => ClError::BuildProgramFailed,
+            -49 => ClError::InvalidArgIndex,
             _ => ClError::UnknownError(code),
         }
     }
@@ -127,7 +133,7 @@ fn setup(plat: usize, dev: usize) -> Result<Env, ClError> {
         let mut num_platforms: cl_uint = 0;
         clGetPlatformIDs(0, std::ptr::null_mut(), &mut num_platforms);
         if plat >= num_platforms as usize {
-            return Err(ClError::NonexistentPlatform)
+            return Err(ClError::NonexistentPlatform);
         }
 
         let mut platforms: Vec<cl_platform_id> = vec![std::ptr::null_mut(); num_platforms as usize];
@@ -143,7 +149,7 @@ fn setup(plat: usize, dev: usize) -> Result<Env, ClError> {
         );
 
         if dev >= num_devices as usize {
-            return Err(ClError::NonexistentPlatform)
+            return Err(ClError::NonexistentPlatform);
         }
 
         let mut devices: Vec<cl_device_id> = vec![std::ptr::null_mut(); num_devices as usize];
@@ -169,13 +175,17 @@ fn setup(plat: usize, dev: usize) -> Result<Env, ClError> {
             &mut err,
         );
 
+        if err != 0 {
+            return Err(ClError::from(err));
+        }
+
         let queue = clCreateCommandQueue(context, device, 0, &mut err);
 
         if err != 0 {
-            panic!("OpenCL error: {}", err);
+            return Err(ClError::from(err));
         }
-        Ok(
-        Env {
+
+        Ok(Env {
             platform,
             device,
             context,
@@ -184,8 +194,7 @@ fn setup(plat: usize, dev: usize) -> Result<Env, ClError> {
             kernel: std::ptr::null_mut(),
             kerncode: None,
             err,
-        }
-        )
+        })
     }
 }
 
@@ -214,7 +223,7 @@ fn make_prog(env: &mut Env) -> Result<(), ClError> {
             );
             if builderr != 0 {
                 Err(ClError::from(builderr))
-             } else {
+            } else {
                 env.program = program;
                 Ok(())
             }

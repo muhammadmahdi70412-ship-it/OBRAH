@@ -3,6 +3,7 @@ use obrah::kernel::*;
 use obrah::runtime::*;
 use std::fs::File;
 use std::io;
+use std::io::Read;
 use std::io::Write;
 
 fn save_ppm(
@@ -44,6 +45,13 @@ fn read_input(inputmsg: &str) -> f32 {
         Err(_) => panic!("Please enter a valid float."),
     };
 }
+
+fn read_texture(path: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let mut file = File::open(path)?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)?;
+    Ok(buffer)
+}
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     const WIDTH: usize = 1000;
     const HEIGHT: usize = 1000;
@@ -65,8 +73,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     input = input.trim().to_string();
 
-    let mut sphere = [500.0f32, 500.0, 100.0, 300.0];
-    let mut light = [500.0f32, 300.0, 500.0];
+    let mut sphere = [700.0f32, 500.0, 100.0, 100.0];
+    let mut light = [500.0f32, 400.0, 300.0];
 
     if input.to_lowercase() == String::from("y") {
         let sphere_x = read_input("Enter sphere x: ");
@@ -80,11 +88,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         light = [light_x, light_y, light_z];
     }
 
-    setarg(&env, &data_buf, 0); // our first argument is the empty buffer.
+    setarg(&env, &data_buf, 0)?; // our first argument is the empty buffer.
     setarg_scalar(&env, &WIDTH, 1); // the second argument is the width.
     setarg_scalar(&env, &HEIGHT, 2); // the third argument is the height.
     setarg_scalar(&env, &sphere, 3); // the fourth argument - THE SPHERE.
-    setarg_scalar(&env, &light, 4); // finally, the light
+    setarg_scalar(&env, &light, 4); // the light is fifth
+
+    let pixels = read_texture("texture.raw")?;
+    let mut tex = Vec::with_capacity(pixels.len());
+    for &b in &pixels {
+        tex.push(b as f32 / 255.0);
+    }
+    let mut tex_buf = Buffer::new(&mut env, &tex);
+    tex_buf.to(&mut env);
+    setarg(&env, &tex_buf, 5)?; // sphere texture
+
+    let pixels = read_texture("ground.raw")?;
+    let mut tex = Vec::with_capacity(pixels.len());
+    for &b in &pixels {
+        tex.push(b as f32 / 255.0);
+    }
+    let mut tex_buf = Buffer::new(&mut env, &tex);
+    tex_buf.to(&mut env);
+    setarg(&env, &tex_buf, 6)?; // ground texture
+
+    setarg_scalar(&env, &1, 7); // shadow the ground
 
     println!("Starting kernel execution...");
     run_kernel(&mut env, WIDTH, HEIGHT); // we are going to run the kernel at 1k by 1k resolution.
