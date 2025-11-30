@@ -162,8 +162,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         run_kernel(&mut env, WIDTH, HEIGHT); // we are going to run the kernel at 1080p
 
         data_buf.from(&mut data, &mut env); // now, we are going to retrieve the data from the buffer.
+        // little challenge for anyone who wants to test themselves -
+        // could you change this code to instead handle transform into bytes on the kernel instead?
+        // remember - it takes less than 3 seconds to render, even on an igpu.
+        // but it takes 40+ seconds to convert & pipe to ffmpeg.
+        // is there a way to optimise this?
+        // have fun!
         for chunk in data.chunks_exact(4) {
-            // we will get just the red, green, and blue values - no alpha in raw.
             let r = (chunk[0].clamp(0.0, 1.0) * 255.0) as u8;
             let g = (chunk[1].clamp(0.0, 1.0) * 255.0) as u8;
             let b = (chunk[2].clamp(0.0, 1.0) * 255.0) as u8;

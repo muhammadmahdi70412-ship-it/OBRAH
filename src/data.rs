@@ -1,6 +1,37 @@
 use crate::runtime::Env;
 use obwio::*;
 
+/// The padded float3 type. Necessary when making buffers of float3, as normal Rust
+/// [f32; 3] is not padded to 16 bytes.
+#[repr(C, align(16))]
+#[derive(Copy, Clone)]
+pub struct Float3 {
+    x: f32,
+    y: f32,
+    z: f32,
+}
+
+impl Float3 {
+    pub fn new(x: f32, y: f32, z: f32) -> Self {
+        Float3 { x, y, z }
+    }
+}
+
+/// The padded float2 type. Necessary when making buffers of float2, as normal Rust
+/// [f32; 2] is not padded to 16 bytes.
+#[repr(C, align(16))]
+#[derive(Copy, Clone)]
+pub struct Float2 {
+    x: f32,
+    y: f32,
+}
+
+impl Float2 {
+    pub fn new(x: f32, y: f32) -> Self {
+        Float2 { x, y }
+    }
+}
+
 /// Buffer is a struct that holds, well, a buffer.
 /// It is returned by Buffer::new().
 ///
@@ -61,7 +92,7 @@ where
     T: Clone + 'static,
 {
     unsafe {
-        let size = data.len() * std::mem::size_of::<f32>();
+        let size = data.len() * std::mem::size_of::<T>();
         let buf = clCreateBuffer(
             env.context,
             CL_MEM_READ_WRITE.into(),
@@ -87,7 +118,7 @@ where
     T: Clone + 'static,
 {
     unsafe {
-        let size = data.len() * std::mem::size_of::<f32>();
+        let size = data.len() * std::mem::size_of::<T>();
         clEnqueueWriteBuffer(
             env.queue,
             buffer.buffer,
@@ -112,7 +143,7 @@ where
     T: Copy + 'static,
 {
     unsafe {
-        let size = data.len() * std::mem::size_of::<f32>();
+        let size = data.len() * std::mem::size_of::<T>();
         clEnqueueReadBuffer(
             env.queue,
             buf.buffer,

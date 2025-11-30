@@ -170,7 +170,7 @@ dependencies = [
 
 [[package]]
 name = "obrah"
-version = "3.4.0"
+version = "3.4.1"
 dependencies = [
  "obwio",
 ]
